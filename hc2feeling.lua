@@ -1,15 +1,20 @@
-local function func_movwf(cmd, var)
-	if("OPTION" == var) then
-		return "OPTION"
-	elseif("IOC" == var)then
-		return "IOST"
+local function func_movwf(vars)
+	if("OPTION" == string.upper(vars[2])) then
+		vars[1] = "OPTION"
+		vars[2] = nil
+		return
+	elseif("IOC" == string.upper(vars[2]))then
+		vars[1] = "IOST"
+		vars[2] = nil
 	else
-		return "MOVAR"
+		vars[1] = "MOVWR"
 	end
 end
 
 
 return {
+["END"] = "END",
+["ORG"] = "ORG",
 ["BCF"] = "BCR",
 ["BSF"] = "BSR",
 ["BTFSC"] = "BTRSC",
