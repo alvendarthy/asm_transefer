@@ -2,7 +2,8 @@ local src_file = arg[1]
 local map_file = arg[2]
 local dst_file = arg[3]
 
-local cmd_map = require(map_file)
+local conf = require(map_file)
+local cmd_map = conf.map
 
 local src = io.open(src_file)
 
@@ -13,25 +14,35 @@ end
 
 function get_var_tab(line)
 	local rest
-	local vars = {}
-	local codes, common = string.match(line, "([^;\n]*)[;]*([^\n]*)$")
-	if(nil ~= common) then
-		vars["common"] = common
-	end
+        local vars = {}
+        local codes, common = string.match(line, "([^;\n]*)[;]*([^\n]*)$")
+        if(nil ~= common) then
+                vars["common"] = common
+        end
 
-	if(nil ~= codes)then
-		rest = codes
-		while(1) do
-			local code
-			code , rest = string.match(rest, "([%w%d_]+)(.*)")
-			if(code == nil) then
-				break
-			end
-			table.insert(vars, code)
-		end
-	end
+        if(nil ~= codes)then
+                rest = codes
 
-	return vars
+                local code , rest = string.match(rest, "(%S+)(.*)")
+                if(code == nil) then
+                        return vars
+                end
+                table.insert(vars, code)
+
+                while(1) do
+                        code , rest = string.match(rest, "([^,]+)(.*)")
+                        if(code == nil) then
+                                break
+                        end
+                        table.insert(vars, code)
+                end
+        end
+
+        return vars
+end
+
+if(conf.before) then
+	conf.before()
 end
 
 repeat
@@ -60,7 +71,7 @@ repeat
 			old_cmd = vars[1]
 			new_cmd = cmd_map[string.upper(old_cmd)]
 			if(nil == new_cmd) then
-				vars.common = vars.common .. " !!!!!!!! BAD CODE"
+				vars.common = " !!!!!!!! BAD CODE"
 				print(line)
 				break
 			end
@@ -95,5 +106,9 @@ repeat
 	end
 
 until(true)
+
+if(conf.after) then
+        conf.after()
+end
 
 src:close()
